@@ -5,8 +5,33 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CSVReaderTool"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
+        Title="MainWindow" MinHeight="500" MinWidth="700" Height="650" Width="1000">
+    <Grid Background="LightGray">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="35"/>
+            <RowDefinition />
+            <RowDefinition Height="70"/>
+        </Grid.RowDefinitions>
+
+        <DataGrid Grid.Row="1" Margin="35,0,35,30"/>
+
+        <Grid Background="Gray" Grid.Row="2">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="auto" MaxWidth="160"/>
+                <ColumnDefinition Width="auto" MaxWidth="160"/>
+
+            </Grid.ColumnDefinitions>
+
+            <Button Margin="10" Width="140" Content="Datei auswählen" Command="{Binding DateiAuswaehlenCommand}"/>
+            <Label Grid.Column="1" Margin="0,20,10,15" Content="{Binding DateiName}" Width="auto" FontSize="15" />
+            <Button Grid.Column="3"  Margin="10" Width="140" Content="Einlesen"/>
+            <Button Grid.Column="4" Margin="10" Width="140" Content="Exportieren"/>
+
+        </Grid>
+
     </Grid>
 </Window>

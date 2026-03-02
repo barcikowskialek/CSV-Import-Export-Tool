@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CSVReaderTool.Logik;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +24,8 @@ namespace CSVReaderTool
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = new DatenBearbeitung();
         }
+
     }
 }
