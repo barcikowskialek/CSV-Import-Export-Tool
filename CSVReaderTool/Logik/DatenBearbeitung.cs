@@ -1,15 +1,22 @@
 ﻿using Microsoft.VisualBasic.FileIO;
 using Microsoft.Win32;
+using OfficeOpenXml.FormulaParsing.LexicalAnalysis;
 using System;
 using System.ComponentModel;
 using System.Data;
 using System.IO;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace CSVReaderTool.Logik
 {
     internal class DatenBearbeitung : INotifyPropertyChanged
     {
+        private CancellationTokenSource _cancelToken;
+
         private string _dateiName = "Keine Datei gewählt";
         public string DateiName
         {
@@ -36,6 +43,20 @@ namespace CSVReaderTool.Logik
             }
         }
 
+        private Visibility _loading = Visibility.Hidden;
+        public Visibility Loading
+        {
+            get => _loading;
+            set
+            {
+                if (_loading != value)
+                {
+                    _loading = value;
+                    OnPropertyChanged(nameof(Loading));
+                }
+            }
+        }
+
         private DataView _tableView;
         public DataView TableView
         {
@@ -53,11 +74,13 @@ namespace CSVReaderTool.Logik
 
         public ICommand DateiExportCommand { get; }
 
+        public ICommand AbbrechenCommand { get; }
         public DatenBearbeitung()
         {
             DateiAuswaehlenCommand = new MeinCommand(DateiAuswaehlen);
             DateiAuslesenCommand = new MeinCommand(DateiAuslesen);
             DateiExportCommand = new MeinCommand(DateiExport);
+            AbbrechenCommand = new MeinCommand(Abbrechen);
         }
 
         #region INotifyPropertyChanged
@@ -90,7 +113,7 @@ namespace CSVReaderTool.Logik
 
         #region DateiAuslesen
 
-        private void DateiAuslesen()
+        private async void DateiAuslesen()
         {
             if (string.IsNullOrWhiteSpace(DateiPfad) || !File.Exists(DateiPfad))
             {
@@ -100,31 +123,57 @@ namespace CSVReaderTool.Logik
 
             try
             {
-                var table = new DataTable();
+                _cancelToken = new CancellationTokenSource();
+                var Token = _cancelToken.Token;
+                Loading = Visibility.Visible;
 
-                using (var parser = new TextFieldParser(DateiPfad))
+                var table = await Task.Run(() =>
                 {
-                    parser.TextFieldType = FieldType.Delimited;
-                    parser.SetDelimiters(";");
-                    parser.HasFieldsEnclosedInQuotes = true;
+                    var Data  = new DataTable();
 
-                    string[] headers = parser.ReadFields();
-                    foreach (var header in headers)
-                        table.Columns.Add(header);
+                    Thread.Sleep(1000);
 
-                    while (!parser.EndOfData)
+                    using (var parser = new TextFieldParser(DateiPfad))
                     {
-                        string[] fields = parser.ReadFields();
-                        table.Rows.Add(fields);
+                        parser.TextFieldType = FieldType.Delimited;
+                        parser.SetDelimiters(";");
+                        parser.HasFieldsEnclosedInQuotes = true;
+
+                        Token.ThrowIfCancellationRequested();
+                        string[] headers = parser.ReadFields();
+                        Token.ThrowIfCancellationRequested();
+
+                        if (headers == null) return Data;
+                        foreach (var header in headers)
+                            Data.Columns.Add(header);
+
+                        while (!parser.EndOfData)
+                        {
+                            Token.ThrowIfCancellationRequested();
+
+                            string[] fields = parser.ReadFields();
+                            Token.ThrowIfCancellationRequested(); 
+
+                            if (fields == null) continue;
+                            Data.Rows.Add(fields);
+                        }
                     }
-                }
+
+                    return Data;
+                }, Token);
 
                 TableView = table.DefaultView;
                 Enabled = true;
+                Loading = Visibility.Hidden;
+            }
+            catch (OperationCanceledException)
+            {
+                Loading = Visibility.Hidden;
             }
             catch (Exception ex)
             {
                 System.Windows.MessageBox.Show("Fehler beim Einlesen: " + ex.Message);
+                Loading = Visibility.Hidden;
             }
         }
 
@@ -154,5 +203,10 @@ namespace CSVReaderTool.Logik
         }
 
         #endregion DateiExportieren
+
+        private void Abbrechen()
+        {
+            _cancelToken.Cancel();
+        }
     }
 }
