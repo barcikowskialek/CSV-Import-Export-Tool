@@ -27,5 +27,22 @@ namespace CSVReaderTool
             DataContext = new DatenBearbeitung();
         }
 
+        private void dataGrid_AutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
+        {
+            if (e.Column is DataGridTextColumn textCol)
+            {
+                var converter = (HttpColor)FindResource("HttpColor");
+
+                var binding = new Binding(e.PropertyName)
+                {
+                    Converter = converter
+                };
+
+                var style = new Style(typeof(TextBlock));
+                style.Setters.Add(new Setter(TextBlock.ForegroundProperty, binding));
+
+                textCol.ElementStyle = style;
+            }
+        }
     }
 }

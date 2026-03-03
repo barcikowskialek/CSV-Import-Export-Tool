@@ -1,14 +1,10 @@
-﻿using Microsoft.Win32;
+﻿using Microsoft.VisualBasic.FileIO;
+using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.Design;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
 using System.Data;
+using System.IO;
+using System.Windows.Input;
 
 namespace CSVReaderTool.Logik
 {
@@ -28,7 +24,7 @@ namespace CSVReaderTool.Logik
 
         private bool _enabled = false;
         public bool Enabled
-        { 
+        {
             get => _enabled;
             set
             {
@@ -80,13 +76,13 @@ namespace CSVReaderTool.Logik
 
         private void DateiAuswaehlen()
         {
-            var dlg = new OpenFileDialog();
-            dlg.Filter = "CSV (*.csv)|*.csv|Alle Dateien (*.*)|*.*";
+            var Dialog = new OpenFileDialog();
+            Dialog.Filter = "CSV (*.csv)|*.csv|Alle Dateien (*.*)|*.*";
 
-            if (dlg.ShowDialog() == true)
+            if (Dialog.ShowDialog() == true)
             {
-                DateiPfad = dlg.FileName;
-                DateiName = Path.GetFileNameWithoutExtension(dlg.FileName);
+                DateiPfad = Dialog.FileName;
+                DateiName = Path.GetFileNameWithoutExtension(Dialog.FileName);
             }
         }
 
@@ -104,34 +100,23 @@ namespace CSVReaderTool.Logik
 
             try
             {
-                var lines = File.ReadAllLines(DateiPfad);
-                if (lines.Length == 0)
-                {
-                    System.Windows.MessageBox.Show("Die CSV-Datei ist leer.");
-                    return;
-                }
-
-                char separator = ';';
-
                 var table = new DataTable();
 
-                var headers = lines[0].Split(separator);
-                foreach (var h in headers)
-                    table.Columns.Add(h.Trim());
-
-                for (int i = 1; i < lines.Length; i++)
+                using (var parser = new TextFieldParser(DateiPfad))
                 {
-                    if (string.IsNullOrWhiteSpace(lines[i]))
-                        continue;
+                    parser.TextFieldType = FieldType.Delimited;
+                    parser.SetDelimiters(";");
+                    parser.HasFieldsEnclosedInQuotes = true;
 
-                    var values = lines[i].Split(separator);
+                    string[] headers = parser.ReadFields();
+                    foreach (var header in headers)
+                        table.Columns.Add(header);
 
-                    var row = table.NewRow();
-                    for (int c = 0; c < table.Columns.Count; c++)
+                    while (!parser.EndOfData)
                     {
-                        row[c] = c < values.Length ? values[c].Trim() : "";
+                        string[] fields = parser.ReadFields();
+                        table.Rows.Add(fields);
                     }
-                    table.Rows.Add(row);
                 }
 
                 TableView = table.DefaultView;
@@ -151,19 +136,19 @@ namespace CSVReaderTool.Logik
         {
             string StandartOrtner = Path.GetDirectoryName(DateiPfad);
 
-            var dlg = new Microsoft.Win32.SaveFileDialog();
-            dlg.Filter = "Excel-Datei (*.xlsx)|*.xlsx";
-            dlg.Title = "Excel-Datei speichern";
-            dlg.FileName = DateiName;
+            var Dialog = new Microsoft.Win32.SaveFileDialog();
+            Dialog.Filter = "Excel-Datei (*.xlsx)|*.xlsx";
+            Dialog.Title = "Excel-Datei speichern";
+            Dialog.FileName = DateiName;
 
             if (!string.IsNullOrWhiteSpace(StandartOrtner))
-                dlg.InitialDirectory = StandartOrtner;
+                Dialog.InitialDirectory = StandartOrtner;
 
-            bool? ok = dlg.ShowDialog();
+            bool? ok = Dialog.ShowDialog();
             if (ok != true)
                 return;
 
-            string exportPath = dlg.FileName;
+            string exportPath = Dialog.FileName;
 
             System.Windows.MessageBox.Show("Würde exportieren nach:\n" + exportPath);
         }
