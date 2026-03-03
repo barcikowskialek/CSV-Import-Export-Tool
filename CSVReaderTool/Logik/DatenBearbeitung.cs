@@ -26,6 +26,20 @@ namespace CSVReaderTool.Logik
         }
         public string DateiPfad { get; private set; }
 
+        private bool _enabled = false;
+        public bool Enabled
+        { 
+            get => _enabled;
+            set
+            {
+                if (_enabled != value)
+                {
+                    _enabled = value;
+                    OnPropertyChanged(nameof(Enabled));
+                }
+            }
+        }
+
         private DataView _tableView;
         public DataView TableView
         {
@@ -41,10 +55,13 @@ namespace CSVReaderTool.Logik
 
         public ICommand DateiAuswaehlenCommand { get; }
 
+        public ICommand DateiExportCommand { get; }
+
         public DatenBearbeitung()
         {
             DateiAuswaehlenCommand = new MeinCommand(DateiAuswaehlen);
             DateiAuslesenCommand = new MeinCommand(DateiAuslesen);
+            DateiExportCommand = new MeinCommand(DateiExport);
         }
 
         #region INotifyPropertyChanged
@@ -61,7 +78,6 @@ namespace CSVReaderTool.Logik
         #region DateiAuswahl
 
 
-
         private void DateiAuswaehlen()
         {
             var dlg = new OpenFileDialog();
@@ -70,7 +86,7 @@ namespace CSVReaderTool.Logik
             if (dlg.ShowDialog() == true)
             {
                 DateiPfad = dlg.FileName;
-                DateiName = Path.GetFileName(dlg.FileName);
+                DateiName = Path.GetFileNameWithoutExtension(dlg.FileName);
             }
         }
 
@@ -119,6 +135,7 @@ namespace CSVReaderTool.Logik
                 }
 
                 TableView = table.DefaultView;
+                Enabled = true;
             }
             catch (Exception ex)
             {
@@ -127,5 +144,30 @@ namespace CSVReaderTool.Logik
         }
 
         #endregion DateiAuslesen
+
+        #region DateiExportieren
+
+        private void DateiExport()
+        {
+            string StandartOrtner = Path.GetDirectoryName(DateiPfad);
+
+            var dlg = new Microsoft.Win32.SaveFileDialog();
+            dlg.Filter = "Excel-Datei (*.xlsx)|*.xlsx";
+            dlg.Title = "Excel-Datei speichern";
+            dlg.FileName = DateiName;
+
+            if (!string.IsNullOrWhiteSpace(StandartOrtner))
+                dlg.InitialDirectory = StandartOrtner;
+
+            bool? ok = dlg.ShowDialog();
+            if (ok != true)
+                return;
+
+            string exportPath = dlg.FileName;
+
+            System.Windows.MessageBox.Show("Würde exportieren nach:\n" + exportPath);
+        }
+
+        #endregion DateiExportieren
     }
 }

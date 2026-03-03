@@ -30,7 +30,7 @@
             <Button Margin="10" Width="140" Content="Datei auswählen" Command="{Binding DateiAuswaehlenCommand}"/>
             <Label Grid.Column="1" Margin="0,20,10,15" Content="{Binding DateiName}" Width="auto" FontSize="15" />
             <Button Grid.Column="3"  Margin="10" Width="140" Content="Einlesen" Command="{Binding DateiAuslesenCommand}" />
-            <Button Grid.Column="4" Margin="10" Width="140" Content="Exportieren"/>
+            <Button Grid.Column="4" Margin="10" Width="140" Content="Exportieren" IsEnabled="{Binding Enabled}" Command="{Binding DateiExportCommand}"/>
 
         </Grid>
 
