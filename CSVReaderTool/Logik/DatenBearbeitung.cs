@@ -2,9 +2,11 @@
 using Microsoft.Win32;
 using OfficeOpenXml.FormulaParsing.LexicalAnalysis;
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,6 +58,10 @@ namespace CSVReaderTool.Logik
                 }
             }
         }
+
+        public ObservableCollection<SpaltenAuswahl> Spalten { get; } = new ObservableCollection<SpaltenAuswahl>();
+
+        private DataTable _data;
 
         private DataView _tableView;
         public DataView TableView
@@ -162,7 +168,20 @@ namespace CSVReaderTool.Logik
                     return Data;
                 }, Token);
 
+                _data = table;
+
+                Spalten.Clear();
+                foreach (DataColumn col in table.Columns)
+                {
+                    Spalten.Add(new SpaltenAuswahl
+                    {
+                        Name = col.ColumnName,
+                        IsChecked = true
+                    });
+                }
+
                 TableView = table.DefaultView;
+
                 Enabled = true;
                 Loading = Visibility.Hidden;
             }
@@ -175,6 +194,9 @@ namespace CSVReaderTool.Logik
                 System.Windows.MessageBox.Show("Fehler beim Einlesen: " + ex.Message);
                 Loading = Visibility.Hidden;
             }
+
+            _cancelToken?.Dispose();
+            _cancelToken = null;
         }
 
         #endregion DateiAuslesen
@@ -183,6 +205,14 @@ namespace CSVReaderTool.Logik
 
         private void DateiExport()
         {
+            var selectedColumns = Spalten.Where(s => s.IsChecked).Select(s => s.Name).ToList();
+
+            if (selectedColumns.Count == 0)
+            {
+                MessageBox.Show("Bitte mindestens eine Spalte auswählen.");
+                return;
+            }
+
             string StandartOrtner = Path.GetDirectoryName(DateiPfad);
 
             var Dialog = new Microsoft.Win32.SaveFileDialog();
@@ -199,7 +229,7 @@ namespace CSVReaderTool.Logik
 
             string exportPath = Dialog.FileName;
 
-            System.Windows.MessageBox.Show("Würde exportieren nach:\n" + exportPath);
+            System.Windows.MessageBox.Show("Würde exportieren nach:\n" + exportPath + "\n\nAusgewählte Spalten:\n" + string.Join(", ", selectedColumns));
         }
 
         #endregion DateiExportieren

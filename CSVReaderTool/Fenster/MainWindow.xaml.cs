@@ -29,6 +29,17 @@ namespace CSVReaderTool
 
         private void dataGrid_AutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
         {
+            if (DataContext is CSVReaderTool.Logik.DatenBearbeitung dataContext)
+            {
+                var spalte = dataContext.Spalten.FirstOrDefault(s => s.Name == e.PropertyName);
+                if (spalte != null)
+                {
+                    e.Column.Header = spalte;
+                    e.Column.HeaderTemplate = (DataTemplate)FindResource("HeaderCheckBoxTemplate");
+                }
+            }
+
+
             if (e.Column is DataGridTextColumn textCol)
             {
                 var converter = (HttpColor)FindResource("HttpColor");

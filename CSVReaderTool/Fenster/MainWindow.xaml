@@ -9,6 +9,12 @@
         Title="MainWindow" MinHeight="500" MinWidth="700" Height="650" Width="1000">
     <Window.Resources>
         <Converter:HttpColor x:Key="HttpColor"/>
+
+        <DataTemplate x:Key="HeaderCheckBoxTemplate">
+            <CheckBox Content="{Binding Name}"
+              IsChecked="{Binding IsChecked}"
+              VerticalAlignment="Center"/>
+        </DataTemplate>
     </Window.Resources>
     
     <Grid Background="LightGray">
@@ -32,7 +38,7 @@
             </Grid.ColumnDefinitions>
 
             <Button Margin="10" Width="140" Content="Datei auswählen" Command="{Binding DateiAuswaehlenCommand}"/>
-            <Label Grid.Column="1" Margin="0,20,10,15" Content="{Binding DateiName}" Width="auto" FontSize="15" />
+            <Label Grid.Column="1" Margin="0,20,10,18" Content="{Binding DateiName}" Width="auto" FontSize="15" Background="White" BorderBrush="Black" BorderThickness="1"/>
             <Button Grid.Column="3"  Margin="10" Width="140" Content="Einlesen" Command="{Binding DateiAuslesenCommand}" />
             <Button Grid.Column="4" Margin="10" Width="140" Content="Exportieren" IsEnabled="{Binding Enabled}" Command="{Binding DateiExportCommand}"/>
 
