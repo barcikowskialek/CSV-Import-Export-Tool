@@ -131,7 +131,7 @@ namespace CSVReaderTool.Logik
             try
             {
                 _cancelToken = new CancellationTokenSource();
-                CancellationToken Token = _cancelToken.Token;
+                CancellationToken token = _cancelToken.Token;
                 Loading = Visibility.Visible;
 
                 DataTable table = await Task.Run(() =>
@@ -146,9 +146,9 @@ namespace CSVReaderTool.Logik
                         parser.SetDelimiters(";");
                         parser.HasFieldsEnclosedInQuotes = true;
 
-                        Token.ThrowIfCancellationRequested();
+                        token.ThrowIfCancellationRequested();
                         string[] headers = parser.ReadFields();
-                        Token.ThrowIfCancellationRequested();
+                        token.ThrowIfCancellationRequested();
 
                         if (headers == null) return Data;
                         foreach (string header in headers)
@@ -156,10 +156,10 @@ namespace CSVReaderTool.Logik
 
                         while (!parser.EndOfData)
                         {
-                            Token.ThrowIfCancellationRequested();
+                            token.ThrowIfCancellationRequested();
 
                             string[] fields = parser.ReadFields();
-                            Token.ThrowIfCancellationRequested();
+                            token.ThrowIfCancellationRequested();
 
                             if (fields == null) continue;
                             Data.Rows.Add(fields);
@@ -167,7 +167,7 @@ namespace CSVReaderTool.Logik
                     }
 
                     return Data;
-                }, Token);
+                }, token);
 
                 _data = table;
 
@@ -194,9 +194,12 @@ namespace CSVReaderTool.Logik
                 System.Windows.MessageBox.Show("Fehler beim Einlesen: " + ex.Message);
 
             }
-            Loading = Visibility.Hidden;
-            _cancelToken?.Dispose();
-            _cancelToken = null;
+            finally 
+            {
+                Loading = Visibility.Hidden; 
+                _cancelToken?.Dispose(); 
+                _cancelToken = null; 
+            }
         }
 
         #endregion DateiAuslesen
@@ -215,14 +218,18 @@ namespace CSVReaderTool.Logik
 
             string exportPath = SpeicherOrtAuswahl();
 
-            if (exportPath == null)
+            if (string.IsNullOrWhiteSpace(exportPath)) 
                 return;
 
-            await ExelErstelen(exportPath, SpaltenAuswahl);
+            _cancelToken?.Dispose();
+            _cancelToken = new CancellationTokenSource();
+            await ExcelErstellen(exportPath, SpaltenAuswahl);
 
             if (!File.Exists(exportPath))
                 return;
 
+            _cancelToken?.Dispose();
+            _cancelToken = null;
 
             string argument = "/select, \"" + exportPath + "\"";
 
@@ -233,15 +240,15 @@ namespace CSVReaderTool.Logik
 
         private string SpeicherOrtAuswahl()
         {
-            string StandartOrtner = Path.GetDirectoryName(DateiPfad);
+            string StandardOrtner = Path.GetDirectoryName(DateiPfad);
 
             SaveFileDialog Dialog = new SaveFileDialog();
             Dialog.Filter = "Excel-Datei (*.xlsx)|*.xlsx";
             Dialog.Title = "Excel-Datei speichern";
             Dialog.FileName = DateiName;
 
-            if (!string.IsNullOrWhiteSpace(StandartOrtner))
-                Dialog.InitialDirectory = StandartOrtner;
+            if (!string.IsNullOrWhiteSpace(StandardOrtner))
+                Dialog.InitialDirectory = StandardOrtner;
 
             bool? ok = Dialog.ShowDialog();
             if (ok != true)
@@ -254,24 +261,22 @@ namespace CSVReaderTool.Logik
             return exportPath;
         }
 
-        private async Task ExelErstelen(string exportPath, List<string> spaltenAuswahl)
+        private async Task ExcelErstellen(string exportPath, List<string> spaltenAuswahl)
         {
             Loading = Visibility.Visible;
 
             try
             {
-                _cancelToken?.Dispose();
-                _cancelToken = new CancellationTokenSource();
-                var token = _cancelToken.Token;
+                CancellationToken token = _cancelToken.Token;
 
                 await Task.Run(() =>
                 {
                     Thread.Sleep(1000);
                     token.ThrowIfCancellationRequested();
 
-                    using (var package = new ExcelPackage())
+                    using (ExcelPackage package = new ExcelPackage())
                     {
-                        var sheet = package.Workbook.Worksheets.Add(DateiName);
+                        ExcelWorksheet sheet = package.Workbook.Worksheets.Add(DateiName);
 
                         for (int c = 0; c < spaltenAuswahl.Count; c++)
                         {
@@ -292,7 +297,7 @@ namespace CSVReaderTool.Logik
                             }
                         }
 
-                        var datei = new FileInfo(exportPath);
+                        FileInfo datei = new FileInfo(exportPath);
                         package.SaveAs(datei);
                     }
                 }, token);
@@ -304,18 +309,17 @@ namespace CSVReaderTool.Logik
             {
                 MessageBox.Show("Fehler beim Export: " + ex.Message);
             }
-            Loading = Visibility.Hidden;
-
-            _cancelToken?.Dispose();
-            _cancelToken = null;
-
+            finally
+            {
+                Loading = Visibility.Hidden;
+            }
         }
 
         #endregion DateiExportieren
 
         private void Abbrechen()
         {
-            _cancelToken.Cancel();
+            _cancelToken?.Cancel();
         }
     }
 }

@@ -62,7 +62,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="Fenster\MainWindow.xaml">
+    <Page Include="Ansichten\CSVReader.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -70,14 +70,14 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Fenster\MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
+    <Compile Include="Ansichten\CSVReader.xaml.cs">
+      <DependentUpon>CSVReader.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Logik\DatenBearbeitung.cs" />
-    <Compile Include="Logik\HttpColor.cs" />
+    <Compile Include="Converter\HttpColor.cs" />
     <Compile Include="Logik\MeinCommand.cs" />
     <Compile Include="Logik\SpaltenAuswahl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
