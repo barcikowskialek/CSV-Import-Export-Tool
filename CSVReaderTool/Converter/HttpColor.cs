@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
 
-namespace CSVReaderTool.Logik
+namespace CSVReaderTool.Converter
 {
     public class HttpColor : IValueConverter
     {

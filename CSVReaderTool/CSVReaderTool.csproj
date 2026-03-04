@@ -78,8 +78,8 @@
   <ItemGroup>
     <Compile Include="Logik\DatenBearbeitung.cs" />
     <Compile Include="Converter\HttpColor.cs" />
-    <Compile Include="Logik\MeinCommand.cs" />
-    <Compile Include="Logik\SpaltenAuswahl.cs" />
+    <Compile Include="Befehle\MeinCommand.cs" />
+    <Compile Include="Modelle\SpaltenAuswahl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

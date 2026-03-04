@@ -1,4 +1,6 @@
-﻿using CSVReaderTool.Logik;
+﻿using CSVReaderTool.Converter;
+using CSVReaderTool.Logik;
+using CSVReaderTool.Modelle;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,9 +31,9 @@ namespace CSVReaderTool
 
         private void dataGrid_AutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
         {
-            if (DataContext is CSVReaderTool.Logik.DatenBearbeitung dataContext)
+            if (DataContext is DatenBearbeitung dataContext)
             {
-                var spalte = dataContext.Spalten.FirstOrDefault(s => s.Name == e.PropertyName);
+                SpaltenAuswahl spalte = dataContext.Spalten.FirstOrDefault(s => s.Name == e.PropertyName);
                 if (spalte != null)
                 {
                     e.Column.Header = spalte;
@@ -41,14 +43,14 @@ namespace CSVReaderTool
 
             if (e.Column is DataGridTextColumn textCol)
             {
-                var converter = (HttpColor)FindResource("HttpColor");
+                HttpColor converter = (HttpColor)FindResource("HttpColor");
 
-                var binding = new Binding(e.PropertyName)
+                Binding binding = new Binding(e.PropertyName)
                 {
                     Converter = converter
                 };
 
-                var style = new Style(typeof(TextBlock));
+                Style style = new Style(typeof(TextBlock));
                 style.Setters.Add(new Setter(TextBlock.ForegroundProperty, binding));
 
                 textCol.ElementStyle = style;

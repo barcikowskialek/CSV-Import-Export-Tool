@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CSVReaderTool.Logik
+namespace CSVReaderTool.Modelle
 {
     internal class SpaltenAuswahl : INotifyPropertyChanged
     {
