@@ -238,9 +238,8 @@ namespace CSVReaderTool.Logik
             if (string.IsNullOrWhiteSpace(exportPath)) 
                 return;
 
-            await ExcelErstellen(exportPath, SpaltenAuswahl);
-
-            if (!File.Exists(exportPath))
+            bool ok = await ExcelErstellen(exportPath, SpaltenAuswahl);
+            if (!ok)
                 return;
 
             string argument = "/select, \"" + exportPath + "\"";
@@ -276,7 +275,7 @@ namespace CSVReaderTool.Logik
 
         /// Erstellt die Excel-Datei
         /// und schreibt die ausgewählten Spalten hinein.
-        private async Task ExcelErstellen(string exportPath, List<string> spaltenAuswahl)
+        private async Task<bool> ExcelErstellen(string exportPath, List<string> spaltenAuswahl)
         {
             _cancelToken?.Dispose();
             _cancelToken = new CancellationTokenSource();
@@ -315,17 +314,21 @@ namespace CSVReaderTool.Logik
                             }
                         }
 
+                        token.ThrowIfCancellationRequested();
                         FileInfo datei = new FileInfo(exportPath);
                         package.SaveAs(datei);
                     }
                 }, token);
+                return true;
             }
             catch (OperationCanceledException)
             {
+                return false;
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Fehler beim Export: " + ex.Message);
+                return false;
             }
             finally
             {
