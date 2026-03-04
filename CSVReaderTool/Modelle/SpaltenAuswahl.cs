@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace CSVReaderTool.Modelle
 {
+    /// Modell für eine auswählbare Spalte für den Export.
     internal class SpaltenAuswahl : INotifyPropertyChanged
     {
         public string Name { get; set; } = "";

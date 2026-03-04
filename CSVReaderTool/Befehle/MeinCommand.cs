@@ -7,6 +7,7 @@ using System.Windows.Input;
 
 namespace CSVReaderTool.Befehle
 {
+    /// Einfacher ICommand zum Ausführen von Methoden aus dem ViewModel.
     internal class MeinCommand : ICommand
     {
         private readonly Action _action;

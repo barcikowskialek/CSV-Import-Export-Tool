@@ -5,6 +5,9 @@ using System.Windows.Media;
 
 namespace CSVReaderTool.Converter
 {
+    /// ValueConverter für das DataGrid.
+    /// Prüft, ob ein Zellenwert mit "http:" beginnt.
+    /// Falls ja, wird der Text orange dargestellt.
     public class HttpColor : IValueConverter
     {
         public object Convert(object value, Type t, object p, CultureInfo c)

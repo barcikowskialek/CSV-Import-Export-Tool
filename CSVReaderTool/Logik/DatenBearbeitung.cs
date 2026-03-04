@@ -17,6 +17,10 @@ using System.Windows.Input;
 
 namespace CSVReaderTool.Logik
 {
+    /// ViewModel für die Hauptlogik des CSVReaderTools.
+    /// Verwaltet das Einlesen von CSV-Dateien, die Anzeige der Daten
+    /// sowie den Export in eine Excel-Datei.
+
     internal class DatenBearbeitung : INotifyPropertyChanged
     {
         private CancellationTokenSource _cancelToken;
@@ -105,7 +109,8 @@ namespace CSVReaderTool.Logik
 
         #region DateiAuswahl
 
-
+        /// Öffnet einen Dialog zur Auswahl einer CSV-Datei.
+        /// Setzt danach DateiPfad und DateiName.
         private void DateiAuswaehlen()
         {
             OpenFileDialog Dialog = new OpenFileDialog();
@@ -123,6 +128,8 @@ namespace CSVReaderTool.Logik
 
         #region DateiAuslesen
 
+        /// Liest die ausgewählte CSV-Datei ein
+        /// und zeigt die Daten im DataGrid an.
         private async void DateiAuslesen()
         {
             if (string.IsNullOrWhiteSpace(DateiPfad) || !File.Exists(DateiPfad))
@@ -208,6 +215,8 @@ namespace CSVReaderTool.Logik
 
         #region DateiExportieren
 
+        /// Startet den Export der ausgewählten Spalten
+        /// in eine Excel-Datei.
         private async void DateiExport()
         {
             if (_data == null || _data.Rows.Count == 0)
@@ -241,6 +250,7 @@ namespace CSVReaderTool.Logik
             
         }
 
+        /// Ermöglicht die Auswahl vom SpeicherOrt der Excel Datei
         private string SpeicherOrtAuswahl()
         {
             string StandardOrdner = Path.GetDirectoryName(DateiPfad);
@@ -264,6 +274,8 @@ namespace CSVReaderTool.Logik
             return exportPath;
         }
 
+        /// Erstellt die Excel-Datei
+        /// und schreibt die ausgewählten Spalten hinein.
         private async Task ExcelErstellen(string exportPath, List<string> spaltenAuswahl)
         {
             _cancelToken?.Dispose();
