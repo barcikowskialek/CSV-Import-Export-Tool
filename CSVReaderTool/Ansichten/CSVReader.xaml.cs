@@ -21,14 +21,17 @@ namespace CSVReaderTool
     /// <summary>
     /// Interaktionslogik für MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class CSVReader : Window
     {
-        public MainWindow()
+        public CSVReader()
         {
             InitializeComponent();
             DataContext = new DatenBearbeitung();
         }
 
+
+        /// Wird aufgerufen, wenn das DataGrid automatisch Spalten erstellt.
+        /// Hier werden die Header-Checkboxen gesetzt und die http-Färbung angewendet.
         private void dataGrid_AutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
         {
             if (DataContext is DatenBearbeitung dataContext)
@@ -57,6 +60,7 @@ namespace CSVReaderTool
             }
         }
 
+        /// Fügt dem DataGrid Zeilennummern im Row-Header hinzu
         void DataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
         {
             e.Row.Header = (e.Row.GetIndex() + 1).ToString();

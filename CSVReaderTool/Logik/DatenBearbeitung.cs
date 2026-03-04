@@ -148,7 +148,7 @@ namespace CSVReaderTool.Logik
                 {
                     DataTable data = new DataTable();
 
-                    Thread.Sleep(1000);
+                    Thread.Sleep(1000); // Nur zum Testen, damit die Ladeanzeige sichtbar ist
 
                     using (TextFieldParser parser = new TextFieldParser(DateiPfad))
                     {
@@ -289,7 +289,7 @@ namespace CSVReaderTool.Logik
 
                 await Task.Run(() =>
                 {
-                    Thread.Sleep(1000);
+                    Thread.Sleep(1000); // Nur zum Testen, damit die Ladeanzeige sichtbar ist   
                     token.ThrowIfCancellationRequested();
 
                     using (ExcelPackage package = new ExcelPackage())
