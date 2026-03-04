@@ -24,7 +24,7 @@
             <RowDefinition Height="70"/>
         </Grid.RowDefinitions>
 
-        <DataGrid Grid.Row="1" Margin="35,0,35,30" ItemsSource="{Binding TableView}" AutoGenerateColumns="True" AutoGeneratingColumn="dataGrid_AutoGeneratingColumn"/>
+        <DataGrid Grid.Row="1" Margin="35,0,35,30" ItemsSource="{Binding TableView}" AutoGenerateColumns="True" AutoGeneratingColumn="dataGrid_AutoGeneratingColumn"  LoadingRow="DataGrid_LoadingRow"/>
 
         <Grid Background="Gray" Grid.Row="2">
 

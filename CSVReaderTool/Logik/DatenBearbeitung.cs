@@ -1,13 +1,13 @@
 ﻿using Microsoft.VisualBasic.FileIO;
 using Microsoft.Win32;
-using OfficeOpenXml.FormulaParsing.LexicalAnalysis;
+using OfficeOpenXml;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -73,7 +73,7 @@ namespace CSVReaderTool.Logik
                 OnPropertyChanged(nameof(TableView));
             }
         }
-
+        #region Command
         public ICommand DateiAuslesenCommand { get; }
 
         public ICommand DateiAuswaehlenCommand { get; }
@@ -88,6 +88,7 @@ namespace CSVReaderTool.Logik
             DateiExportCommand = new MeinCommand(DateiExport);
             AbbrechenCommand = new MeinCommand(Abbrechen);
         }
+        #endregion Command
 
         #region INotifyPropertyChanged
 
@@ -105,7 +106,7 @@ namespace CSVReaderTool.Logik
 
         private void DateiAuswaehlen()
         {
-            var Dialog = new OpenFileDialog();
+            OpenFileDialog Dialog = new OpenFileDialog();
             Dialog.Filter = "CSV (*.csv)|*.csv|Alle Dateien (*.*)|*.*";
 
             if (Dialog.ShowDialog() == true)
@@ -123,23 +124,23 @@ namespace CSVReaderTool.Logik
         {
             if (string.IsNullOrWhiteSpace(DateiPfad) || !File.Exists(DateiPfad))
             {
-                System.Windows.MessageBox.Show("Bitte zuerst eine CSV-Datei auswählen.");
+                MessageBox.Show("Bitte zuerst eine CSV-Datei auswählen.");
                 return;
             }
 
             try
             {
                 _cancelToken = new CancellationTokenSource();
-                var Token = _cancelToken.Token;
+                CancellationToken Token = _cancelToken.Token;
                 Loading = Visibility.Visible;
 
-                var table = await Task.Run(() =>
+                DataTable table = await Task.Run(() =>
                 {
-                    var Data  = new DataTable();
+                    DataTable Data = new DataTable();
 
                     Thread.Sleep(1000);
 
-                    using (var parser = new TextFieldParser(DateiPfad))
+                    using (TextFieldParser parser = new TextFieldParser(DateiPfad))
                     {
                         parser.TextFieldType = FieldType.Delimited;
                         parser.SetDelimiters(";");
@@ -150,7 +151,7 @@ namespace CSVReaderTool.Logik
                         Token.ThrowIfCancellationRequested();
 
                         if (headers == null) return Data;
-                        foreach (var header in headers)
+                        foreach (string header in headers)
                             Data.Columns.Add(header);
 
                         while (!parser.EndOfData)
@@ -158,7 +159,7 @@ namespace CSVReaderTool.Logik
                             Token.ThrowIfCancellationRequested();
 
                             string[] fields = parser.ReadFields();
-                            Token.ThrowIfCancellationRequested(); 
+                            Token.ThrowIfCancellationRequested();
 
                             if (fields == null) continue;
                             Data.Rows.Add(fields);
@@ -183,18 +184,17 @@ namespace CSVReaderTool.Logik
                 TableView = table.DefaultView;
 
                 Enabled = true;
-                Loading = Visibility.Hidden;
             }
             catch (OperationCanceledException)
             {
-                Loading = Visibility.Hidden;
+                
             }
             catch (Exception ex)
             {
                 System.Windows.MessageBox.Show("Fehler beim Einlesen: " + ex.Message);
-                Loading = Visibility.Hidden;
-            }
 
+            }
+            Loading = Visibility.Hidden;
             _cancelToken?.Dispose();
             _cancelToken = null;
         }
@@ -203,19 +203,39 @@ namespace CSVReaderTool.Logik
 
         #region DateiExportieren
 
-        private void DateiExport()
+        private async void DateiExport()
         {
-            var selectedColumns = Spalten.Where(s => s.IsChecked).Select(s => s.Name).ToList();
+            List<string> SpaltenAuswahl = Spalten.Where(s => s.IsChecked).Select(s => s.Name).ToList();
 
-            if (selectedColumns.Count == 0)
+            if (SpaltenAuswahl.Count == 0)
             {
                 MessageBox.Show("Bitte mindestens eine Spalte auswählen.");
                 return;
             }
 
+            string exportPath = SpeicherOrtAuswahl();
+
+            if (exportPath == null)
+                return;
+
+            await ExelErstelen(exportPath, SpaltenAuswahl);
+
+            if (!File.Exists(exportPath))
+                return;
+
+
+            string argument = "/select, \"" + exportPath + "\"";
+
+
+            System.Diagnostics.Process.Start("explorer.exe", argument);
+
+        }
+
+        private string SpeicherOrtAuswahl()
+        {
             string StandartOrtner = Path.GetDirectoryName(DateiPfad);
 
-            var Dialog = new Microsoft.Win32.SaveFileDialog();
+            SaveFileDialog Dialog = new SaveFileDialog();
             Dialog.Filter = "Excel-Datei (*.xlsx)|*.xlsx";
             Dialog.Title = "Excel-Datei speichern";
             Dialog.FileName = DateiName;
@@ -225,11 +245,70 @@ namespace CSVReaderTool.Logik
 
             bool? ok = Dialog.ShowDialog();
             if (ok != true)
-                return;
+                return string.Empty;
 
             string exportPath = Dialog.FileName;
+            if (!exportPath.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+                exportPath += ".xlsx";
 
-            System.Windows.MessageBox.Show("Würde exportieren nach:\n" + exportPath + "\n\nAusgewählte Spalten:\n" + string.Join(", ", selectedColumns));
+            return exportPath;
+        }
+
+        private async Task ExelErstelen(string exportPath, List<string> spaltenAuswahl)
+        {
+            Loading = Visibility.Visible;
+
+            try
+            {
+                _cancelToken?.Dispose();
+                _cancelToken = new CancellationTokenSource();
+                var token = _cancelToken.Token;
+
+                await Task.Run(() =>
+                {
+                    Thread.Sleep(1000);
+                    token.ThrowIfCancellationRequested();
+
+                    using (var package = new ExcelPackage())
+                    {
+                        var sheet = package.Workbook.Worksheets.Add(DateiName);
+
+                        for (int c = 0; c < spaltenAuswahl.Count; c++)
+                        {
+                            token.ThrowIfCancellationRequested();
+                            sheet.Cells[1, c + 1].Value = spaltenAuswahl[c];
+                        }
+
+                        for (int r = 0; r < _data.Rows.Count; r++)
+                        {
+                            token.ThrowIfCancellationRequested();
+
+                            for (int c = 0; c < spaltenAuswahl.Count; c++)
+                            {
+                                token.ThrowIfCancellationRequested();
+
+                                string spaltenName = spaltenAuswahl[c];
+                                sheet.Cells[r + 2, c + 1].Value = _data.Rows[r][spaltenName]?.ToString();
+                            }
+                        }
+
+                        var datei = new FileInfo(exportPath);
+                        package.SaveAs(datei);
+                    }
+                }, token);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Fehler beim Export: " + ex.Message);
+            }
+            Loading = Visibility.Hidden;
+
+            _cancelToken?.Dispose();
+            _cancelToken = null;
+
         }
 
         #endregion DateiExportieren

@@ -39,7 +39,6 @@ namespace CSVReaderTool
                 }
             }
 
-
             if (e.Column is DataGridTextColumn textCol)
             {
                 var converter = (HttpColor)FindResource("HttpColor");
@@ -54,6 +53,11 @@ namespace CSVReaderTool
 
                 textCol.ElementStyle = style;
             }
+        }
+
+        void DataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
+        {
+            e.Row.Header = (e.Row.GetIndex() + 1).ToString();
         }
     }
 }
