@@ -33,16 +33,16 @@ namespace CSVReaderTool.Logik
         }
         public string DateiPfad { get; private set; }
 
-        private bool _enabled = false;
-        public bool Enabled
+        private bool _kannExportieren = false;
+        public bool KannExportieren
         {
-            get => _enabled;
+            get => _kannExportieren;
             set
             {
-                if (_enabled != value)
+                if (_kannExportieren != value)
                 {
-                    _enabled = value;
-                    OnPropertyChanged(nameof(Enabled));
+                    _kannExportieren = value;
+                    OnPropertyChanged(nameof(KannExportieren));
                 }
             }
         }
@@ -115,6 +115,7 @@ namespace CSVReaderTool.Logik
             {
                 DateiPfad = Dialog.FileName;
                 DateiName = Path.GetFileNameWithoutExtension(Dialog.FileName);
+                KannExportieren = false;
             }
         }
 
@@ -138,7 +139,7 @@ namespace CSVReaderTool.Logik
 
                 DataTable table = await Task.Run(() =>
                 {
-                    DataTable Data = new DataTable();
+                    DataTable data = new DataTable();
 
                     Thread.Sleep(1000);
 
@@ -152,9 +153,9 @@ namespace CSVReaderTool.Logik
                         string[] headers = parser.ReadFields();
                         token.ThrowIfCancellationRequested();
 
-                        if (headers == null) return Data;
+                        if (headers == null) return data;
                         foreach (string header in headers)
-                            Data.Columns.Add(header);
+                            data.Columns.Add(header);
 
                         while (!parser.EndOfData)
                         {
@@ -164,11 +165,11 @@ namespace CSVReaderTool.Logik
                             token.ThrowIfCancellationRequested();
 
                             if (fields == null) continue;
-                            Data.Rows.Add(fields);
+                            data.Rows.Add(fields);
                         }
                     }
 
-                    return Data;
+                    return data;
                 }, token);
 
                 _data = table;
@@ -185,7 +186,7 @@ namespace CSVReaderTool.Logik
 
                 TableView = table.DefaultView;
 
-                Enabled = true;
+                KannExportieren = true;
             }
             catch (OperationCanceledException)
             {
@@ -193,8 +194,7 @@ namespace CSVReaderTool.Logik
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show("Fehler beim Einlesen: " + ex.Message);
-
+                MessageBox.Show("Fehler beim Einlesen: " + ex.Message);
             }
             finally 
             {
@@ -210,6 +210,12 @@ namespace CSVReaderTool.Logik
 
         private async void DateiExport()
         {
+            if (_data == null || _data.Rows.Count == 0)
+            {
+                MessageBox.Show("Keine Daten geladen.");
+                return;
+            }
+
             List<string> SpaltenAuswahl = Spalten.Where(s => s.IsChecked).Select(s => s.Name).ToList();
 
             if (SpaltenAuswahl.Count == 0)
@@ -223,40 +229,35 @@ namespace CSVReaderTool.Logik
             if (string.IsNullOrWhiteSpace(exportPath)) 
                 return;
 
-            _cancelToken?.Dispose();
-            _cancelToken = new CancellationTokenSource();
             await ExcelErstellen(exportPath, SpaltenAuswahl);
 
             if (!File.Exists(exportPath))
                 return;
 
-            _cancelToken?.Dispose();
-            _cancelToken = null;
-
             string argument = "/select, \"" + exportPath + "\"";
 
 
             System.Diagnostics.Process.Start("explorer.exe", argument);
-
+            
         }
 
         private string SpeicherOrtAuswahl()
         {
-            string StandardOrtner = Path.GetDirectoryName(DateiPfad);
+            string StandardOrdner = Path.GetDirectoryName(DateiPfad);
 
-            SaveFileDialog Dialog = new SaveFileDialog();
-            Dialog.Filter = "Excel-Datei (*.xlsx)|*.xlsx";
-            Dialog.Title = "Excel-Datei speichern";
-            Dialog.FileName = DateiName;
+            SaveFileDialog dialog = new SaveFileDialog();
+            dialog.Filter = "Excel-Datei (*.xlsx)|*.xlsx";
+            dialog.Title = "Excel-Datei speichern";
+            dialog.FileName = DateiName;
 
-            if (!string.IsNullOrWhiteSpace(StandardOrtner))
-                Dialog.InitialDirectory = StandardOrtner;
+            if (!string.IsNullOrWhiteSpace(StandardOrdner))
+                dialog.InitialDirectory = StandardOrdner;
 
-            bool? ok = Dialog.ShowDialog();
+            bool? ok = dialog.ShowDialog();
             if (ok != true)
                 return string.Empty;
 
-            string exportPath = Dialog.FileName;
+            string exportPath = dialog.FileName;
             if (!exportPath.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
                 exportPath += ".xlsx";
 
@@ -265,6 +266,9 @@ namespace CSVReaderTool.Logik
 
         private async Task ExcelErstellen(string exportPath, List<string> spaltenAuswahl)
         {
+            _cancelToken?.Dispose();
+            _cancelToken = new CancellationTokenSource();
+
             Loading = Visibility.Visible;
 
             try
@@ -314,6 +318,8 @@ namespace CSVReaderTool.Logik
             finally
             {
                 Loading = Visibility.Hidden;
+                _cancelToken?.Dispose();
+                _cancelToken = null;
             }
         }
 

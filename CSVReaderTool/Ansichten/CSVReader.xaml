@@ -45,7 +45,7 @@
             <Button Margin="10" Grid.Row="1" Width="140" Content="Datei auswählen" Command="{Binding DateiAuswaehlenCommand}"/>
             <Label Grid.Column="1" Grid.Row="1" Margin="0,20,40,18" Content="{Binding DateiName}" Width="auto" FontSize="15" Background="White" BorderBrush="Gray" BorderThickness="1"/>
             <Button Grid.Column="2" Grid.Row="1" Margin="10" Width="140" Content="Einlesen" Command="{Binding DateiAuslesenCommand}" />
-            <Button Grid.Column="3" Grid.Row="1" Margin="10" Width="140" Content="Exportieren" IsEnabled="{Binding Enabled}" Command="{Binding DateiExportCommand}"/>
+            <Button Grid.Column="3" Grid.Row="1" Margin="10" Width="140" Content="Exportieren" IsEnabled="{Binding KannExportieren}" Command="{Binding DateiExportCommand}"/>
 
         </Grid>
         <Grid Grid.RowSpan="3" Visibility="{Binding Loading}">
