@@ -1,4 +1,4 @@
-# CSV Reader Tool
+# CSV Import Export Tool
 
 A Windows desktop application built with C#, WPF and the MVVM pattern for importing CSV files, reviewing their contents and exporting selected columns to Microsoft Excel.
 
