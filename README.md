@@ -1,47 +1,117 @@
 # CSV Reader Tool
 
-A Windows desktop application for importing CSV files, viewing their contents and exporting selected columns to an Excel file.
+A Windows desktop application built with C#, WPF and the MVVM pattern for importing CSV files, reviewing their contents and exporting selected columns to Microsoft Excel.
 
-The project was developed with C#, WPF and an MVVM-inspired structure. It focuses on file processing, asynchronous operations, data binding and a clear desktop workflow.
+The project focuses on asynchronous file processing, responsive user interaction and a clean separation between the user interface and application logic.
+
+![CSV Reader Tool](images/application-overview.png)
+
+---
 
 ## Features
 
-- Select and import CSV files
-- Display imported data in a WPF DataGrid
-- Automatically generate columns from the CSV headers
-- Select individual columns for export
-- Export the selected data to an Excel `.xlsx` file
-- Perform CSV import and Excel export asynchronously
-- Cancel ongoing import and export operations
-- Display a loading overlay during longer operations
-- Show row numbers in the DataGrid
-- Highlight HTTP-related values using a value converter
-- Open the exported file location in Windows Explorer
-- Handle invalid files and export errors
+- 📂 Import CSV files
+- 📊 Display imported data in a WPF DataGrid
+- ☑️ Select individual columns for export
+- 📑 Export selected data to Excel (.xlsx)
+- ⚡ Asynchronous file import and export
+- ⏹️ Cancel long-running operations
+- 🎨 Automatic highlighting of HTTP/HTTPS links
+- 🔢 Automatic row numbering
+- ❗ Error handling for invalid files
+- 🪟 Automatically opens the exported file location after a successful export
 
-## Technologies
+---
+
+## Built With
 
 - C#
 - .NET Framework
 - WPF
-- XAML
 - MVVM
-- `INotifyPropertyChanged`
-- Commands
-- `async` / `await`
-- `CancellationToken`
-- `TextFieldParser`
+- XAML
 - EPPlus
+- TextFieldParser
+- Data Binding
+- Async / Await
+- CancellationToken
 - Git
+
+---
 
 ## Project Structure
 
 ```text
-CSVReaderTool/
-├── Ansichten/       # WPF views
-├── Befehle/         # Command implementation
-├── Converter/       # Value converters
-├── Logik/           # Application and data-processing logic
-├── Modelle/         # Data models
-├── App.xaml
-└── CSVReaderTool.csproj
+CSVReaderTool
+│
+├── Ansichten      # Views
+├── Befehle        # Commands
+├── Converter      # Value converters
+├── Logik          # Business logic
+├── Modelle        # Models
+└── Properties
+```
+
+---
+
+## How it works
+
+1. Select a CSV file.
+2. Import the data.
+3. Review the imported information.
+4. Choose which columns should be exported.
+5. Save the result as an Excel file.
+
+---
+
+## What I learned
+
+While developing this project I gained practical experience with:
+
+- WPF desktop application development
+- MVVM architecture
+- Data Binding
+- ICommand implementations
+- Asynchronous programming with `async` / `await`
+- Cancellation using `CancellationToken`
+- Reading structured CSV files
+- Exporting Excel files using EPPlus
+- Creating reusable value converters
+- Organizing projects into a maintainable structure
+
+---
+
+## Planned Improvements
+
+- Support different CSV delimiters
+- Progress indicator during import and export
+- Drag & Drop support
+- Improved UI styling
+- Unit tests
+- Sample CSV files
+
+---
+
+## Getting Started
+
+### Requirements
+
+- Windows
+- Visual Studio
+- .NET Framework
+
+### Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/barcikowskialek/CSVReaderTool.git
+```
+
+Open the solution in Visual Studio, restore the NuGet packages and start the application.
+
+---
+
+## License
+
+This project is published for educational and portfolio purposes.
